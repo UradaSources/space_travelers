@@ -1,0 +1,6 @@
+# https://clangd.llvm.org/config#files
+InlayHints:
+  Designators: Yes
+  Enabled: Yes
+  ParameterNames: No
+  DeducedTypes: No
