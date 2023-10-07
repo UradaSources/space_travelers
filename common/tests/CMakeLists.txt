@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 project(urd_common_test)
 
-find_package(Catch2 3 REQUIRED)
+find_package(Catch2 CONFIG REQUIRED)
 
 set(SOURCE_FILES
 	"./test.cpp")

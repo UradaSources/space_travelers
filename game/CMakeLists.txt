@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
 
-# 项目名称
 project(urd_game)
 
 set(INCLUDE_PATH
@@ -17,12 +16,15 @@ set(SOURCE_FILES
     "./src/Pathfind.cpp"
 )
 
-find_package(fmt REQUIRED)
-find_package(EnTT REQUIRED)
+# find_package(fmt CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_PATH})
 target_link_libraries(${PROJECT_NAME} PRIVATE urd_common urd_basic)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE EnTT::EnTT)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 # option(BUILD_TESTS "Unit test" OFF)

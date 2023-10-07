@@ -53,7 +53,12 @@ namespace urd
 		constexpr float sqrMagnitude() const { return x * x + y * y; }
 
 		void set(float x, float y);
-		void normalize();
+		void normalize()
+		{
+					float len = magnitude();
+		if (len != 0.0f)
+			*this /= len;
+		}
 		vec2 normalized() const;
 		float magnitude() const;
 	};

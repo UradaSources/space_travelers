@@ -9,6 +9,7 @@ set(SOURCE_FILES
     "./src/rect.cpp"
     "./src/vec2.cpp"
     "./src/vec2i.cpp"
+    "./include/common/StepViewer.hpp"
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

@@ -19,15 +19,10 @@ namespace urd
 
 	bool _nodeSort::operator()(const Node& a, const Node& b) const
 	{
-		if (a.f() != b.f())
-			return a.f() > b.f();
+		if (a.tile->y != b.tile->y)
+			return a.tile->y < b.tile->y;
 		else
-		{
-			if (a.tile->y != b.tile->y)
-				return a.tile->y < b.tile->y;
-			else
-				return a.tile->x < b.tile->x;
-		}
+			return a.tile->x < b.tile->x;
 	}
 	bool _nodeSort::operator()(vec2i coord, const Node& n) const
 	{
@@ -79,17 +74,18 @@ namespace urd
 		Node firstNode;
 		assert(this->getOrBuildNode(start->x, start->y, firstNode));
 
-		m_open.insert(std::ref(firstNode));
+		m_open.push_back(std::ref(firstNode));
 
 		while (!m_open.empty())
 		{
+			m_open.sort([](const Node& a, const Node& b){ return a.f() > b.f(); });
+
 			// 查找open列表中f值最小的节点
 			// 将其从open列表中移除并加入close列表
-			auto fMinIt = --m_open.end();
-			Node& curNode = *fMinIt;
-
-			m_open.erase(fMinIt);
-			m_close.insert(std::ref(curNode));
+			Node& curNode = m_open.back();
+			
+			m_open.pop_back();
+			m_close.push_back(std::ref(curNode));
 
 			if (curNode.tile != target)
 			{
@@ -109,7 +105,7 @@ namespace urd
 					Node nearNode;
 					if (this->getOrBuildNode(x, y, nearNode)) // && nearNode.tile->pass)
 					{
-						if (m_close.find(nearNode) == m_close.end())
+						if (!std::binary_search(m_close.begin(), m_close.end(), nearNode))
 							vaildNrarNodes.push_back(std::ref(nearNode));
 					}
 				}

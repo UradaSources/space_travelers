@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "entt",
+    "fmt",
+    "raylib",
+    "catch2"
+  ]
+}
