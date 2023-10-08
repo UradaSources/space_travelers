@@ -10,31 +10,30 @@
 
 namespace urd
 {
-	struct Node
-	{
-		const Tile* tile;
-
-		const Node* last;
-
-		float g;
-		float h;
-
-		inline float f() const { return g + h; }
-		inline bool fBetter(float gNew) const { return gNew + h < this->f(); }
-		inline bool vaild() const { return tile != nullptr; }
-	};
-
-	struct _nodeSort
-	{
-		using is_transparent = void;
-
-		bool operator()(const Node& a, const Node& b) const;
-		bool operator()(vec2i coord, const Node& n) const;
-		bool operator()(const Node& n, vec2i coord) const;
-	};
-
 	class Pathfind
 	{
+		struct Node
+		{
+			const Node* parent;
+
+			int id;
+			const Tile* tile;
+
+			float g;
+			float h;
+
+			constexpr float f() const { return g + h; }
+		};
+
+		struct _nodeSort
+		{
+			using is_transparent = void;
+
+			constexpr bool operator()(const Node& a, const Node& b) const { return a.id < b.id; }
+			constexpr bool operator()(int id, const Node& n) const { return id < n.id; }
+			constexpr bool operator()(const Node& n, int id) const { return id < n.id; }
+		};
+
 	  public:
 		using NodeRef = std::reference_wrapper<Node>;
 
@@ -43,8 +42,8 @@ namespace urd
 
 		std::set<Node, _nodeSort> m_nodeSet;
 
-		std::list<NodeRef> m_open;
-		std::list<NodeRef> m_close;
+		std::set<NodeRef, _nodeSort> m_open;
+		std::set<NodeRef, _nodeSort> m_close;
 
 		bool getOrBuildNode(int x, int y, Node& node);
 

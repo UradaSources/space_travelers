@@ -17,51 +17,28 @@ namespace urd
 		return mathf::abs(b->x - a->x) + mathf::abs(b->y - a->y);
 	}
 
-	bool _nodeSort::operator()(const Node& a, const Node& b) const
+	bool Pathfind::getOrBuildNode(int x, int y, Node* node)
 	{
-		if (a.tile->y != b.tile->y)
-			return a.tile->y < b.tile->y;
-		else
-			return a.tile->x < b.tile->x;
-	}
-	bool _nodeSort::operator()(vec2i coord, const Node& n) const
-	{
-		if (n.tile->y != coord.y)
-			return n.tile->y < coord.y;
-		else
-			return n.tile->x < coord.x;
-	}
-	bool _nodeSort::operator()(const Node& n, vec2i coord) const
-	{
-		if (n.tile->y != coord.y)
-			return n.tile->y < coord.y;
-		else
-			return n.tile->x < coord.x;
-	}
-
-	bool Pathfind::getOrBuildNode(int x, int y, Node& node)
-	{
-		if (!m_grid.vaildCoord(x, y))
-			return false;
-
-		auto it = m_nodeSet.find(vec2i{x, y});
-		if (it == m_nodeSet.end()) // 若节点不存在, 则创建并返回
+		if (m_grid.vaildCoord(x, y))
 		{
-			const Tile* tile = m_grid.tryGetCell(x, y);
+			int id = m_grid.toIndex(x, y);
 
-			auto pair = m_nodeSet.insert(Node{tile, nullptr, 0.0f, 0.0f});
-			node = *pair.first;
-		}
-		else
-			node = *it;
-		
-		if (node.tile->x != x || node.tile->y != y)
-		{
-			std::printf("target{%d,%d}, found{%d,%d}\n", x,y, node.tile->x,node.tile->y);
-			assert(false);
-		}
+			auto it = m_nodeSet.find(id);
+			if (it == m_nodeSet.end())
+			{
+				auto& tile = m_grid.getCell(x, y);
 
-		return true;
+				auto pair = m_nodeSet.insert(Node{nullptr, id, &tile, 0, 0});
+				assert(pair.second);
+
+				node = &(*pair.first);
+			}
+			else
+				node = *it;
+
+			return true;
+		}
+		return false;
 	}
 
 	Pathfind::Pathfind(const WorldGrid& world): m_grid(world) {}
@@ -74,16 +51,26 @@ namespace urd
 		Node firstNode;
 		assert(this->getOrBuildNode(start->x, start->y, firstNode));
 
-		m_open.push_back(std::ref(firstNode));
+		m_open.insert(std::ref(firstNode));
 
 		while (!m_open.empty())
 		{
-			m_open.sort([](const Node& a, const Node& b){ return a.f() > b.f(); });
+			float fMin = 10000;
+			std::reference_wrapper<Node> fMinNode;
+
+			for (Node& node : m_open)
+			{
+				if (node.f() <= fMin)
+				{
+					fMin = node.f();
+					fMinNode = node;
+				}
+			}
 
 			// 查找open列表中f值最小的节点
 			// 将其从open列表中移除并加入close列表
 			Node& curNode = m_open.back();
-			
+
 			m_open.pop_back();
 			m_close.push_back(std::ref(curNode));
 
@@ -128,13 +115,13 @@ namespace urd
 						if (node.fBetter(gNew))
 						{
 							// 更新父节点和g值
-							node.last = &curNode;
+							node.parent = &curNode;
 							node.g = gNew;
 						}
 					}
 					else
 					{
-						nearNode.last = &curNode;
+						nearNode.parent = &curNode;
 						nearNode.g = curNode.g + 10;
 
 						// 计算当前节点到目标的距离h值,
@@ -164,14 +151,14 @@ namespace urd
 		for (auto i = m_open.rbegin(); i != m_open.rend(); i++)
 		{
 			Node& n = *i;
-			std::printf("%p{%d, %d}<=%p\n", &n, n.tile->x, n.tile->y, n.last);
+			std::printf("%p{%d, %d}<=%p\n", &n, n.tile->x, n.tile->y, n.parent);
 		}
 
 		std::printf("close:\n");
 		for (auto i = m_close.rbegin(); i != m_close.rend(); i++)
 		{
 			Node& n = *i;
-			std::printf("%p{%d, %d}<=%p\n", &n, n.tile->x, n.tile->y, n.last);
+			std::printf("%p{%d, %d}<=%p\n", &n, n.tile->x, n.tile->y, n.parent);
 		}
 	}
 } // namespace urd
