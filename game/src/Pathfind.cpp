@@ -17,7 +17,7 @@ namespace urd
 		return mathf::abs(b->x - a->x) + mathf::abs(b->y - a->y);
 	}
 
-	bool Pathfind::getOrBuildNode(int x, int y, Node* node)
+	std::shared_ptr<Pathfind::Node> Pathfind::getOrBuildNode(int x, int y)
 	{
 		if (m_grid.vaildCoord(x, y))
 		{
@@ -26,19 +26,15 @@ namespace urd
 			auto it = m_nodeSet.find(id);
 			if (it == m_nodeSet.end())
 			{
-				auto& tile = m_grid.getCell(x, y);
-
-				auto pair = m_nodeSet.insert(Node{nullptr, id, &tile, 0, 0});
+				const Tile& tile = m_grid.getCell(x, y);
+				auto pair = m_nodeSet.insert(std::make_shared<Node>(id, &tile));
 				assert(pair.second);
-
-				node = &(*pair.first);
+				return *pair.first;
 			}
 			else
-				node = *it;
-
-			return true;
+				return *it;
 		}
-		return false;
+		return nullptr;
 	}
 
 	Pathfind::Pathfind(const WorldGrid& world): m_grid(world) {}
